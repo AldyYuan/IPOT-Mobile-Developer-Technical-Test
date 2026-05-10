@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ipot/features/scanner/scanner_provider.dart';
 import 'package:ipot/features/scanner/scanner_screen.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: '.env');
+
   runApp(const MyApp());
 }
 
