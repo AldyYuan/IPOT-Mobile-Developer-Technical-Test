@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:ipot/app_routes.dart';
+import 'package:ipot/features/menu/menu_provider.dart';
+import 'package:ipot/features/menu/menu_repository.dart';
 import 'package:ipot/features/scanner/scanner_provider.dart';
 import 'package:ipot/features/scanner/scanner_screen.dart';
+import 'package:ipot/shared/theme/button_theme.dart';
+import 'package:ipot/shared/theme/text_field_theme.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
@@ -16,14 +21,21 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: MultiProvider(
-        providers: [ChangeNotifierProvider(create: (_) => ScannerProvider())],
-        child: const ScannerScreen(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ScannerProvider()),
+        ChangeNotifierProvider(create: (_) => MenuProvider(MenuRepository())),
+      ],
+      child: MaterialApp(
+        title: 'IPOT',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Color(0xFFBD0017)),
+          inputDecorationTheme: TextFieldTheme.theme,
+          elevatedButtonTheme: AppButtonTheme.elevated,
+          outlinedButtonTheme: AppButtonTheme.outlined,
+        ),
+        routes: AppRoutes.routes,
+        home: const ScannerScreen(),
       ),
     );
   }

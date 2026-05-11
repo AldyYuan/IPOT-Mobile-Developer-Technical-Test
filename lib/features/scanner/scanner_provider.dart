@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:ipot/app_routes.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 class ScannerProvider extends ChangeNotifier {
+  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+
   final MobileScannerController controller = MobileScannerController();
 
   String? _errorMessage;
@@ -44,6 +47,11 @@ class ScannerProvider extends ChangeNotifier {
 
       if (tableId.isNotEmpty) {
         controller.stop();
+        Navigator.pushNamed(
+          scaffoldKey.currentContext!,
+          AppRoutes.menu,
+          arguments: tableId,
+        );
       }
     } catch (e) {
       _errorMessage = 'Error processing QR code: $e';

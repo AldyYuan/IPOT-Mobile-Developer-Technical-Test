@@ -13,6 +13,7 @@ class ScannerScreen extends StatelessWidget {
         final read = context.read<ScannerProvider>();
 
         return Scaffold(
+          key: read.scaffoldKey,
           backgroundColor: Colors.black,
           appBar: AppBar(
             title: const Text("Scan Menu"),
