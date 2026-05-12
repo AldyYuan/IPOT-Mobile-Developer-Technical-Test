@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:ipot/core/models/menu_item.dart';
-import 'package:ipot/shared/theme/app_colors.dart';
+import 'package:ipot/features/cart/cart_provider.dart';
+import 'package:ipot/features/menu/widgets/cart_item_sheet.dart';
 import 'package:ipot/features/menu/widgets/customization_bottom_sheet.dart';
+import 'package:ipot/shared/theme/app_colors.dart';
+import 'package:ipot/shared/widgets/stepper_button.dart';
+import 'package:provider/provider.dart';
 
 class MenuItemCard extends StatelessWidget {
   final MenuItem item;
@@ -19,14 +23,14 @@ class MenuItemCard extends StatelessWidget {
           Expanded(child: _buildDetails(context)),
           Padding(
             padding: const EdgeInsets.only(right: 12),
-            child: _buildImage(),
+            child: _buildImage(context),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildImage() {
+  Widget _buildImage(BuildContext context) {
     return SizedBox(
       width: 100,
       height: 100,
@@ -50,15 +54,23 @@ class MenuItemCard extends StatelessWidget {
             bottom: 0,
             child: Padding(
               padding: const EdgeInsets.all(8),
-              child: OutlinedButton(
-                onPressed: () {},
-                style: OutlinedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                child: const Text('ADD'),
+              child: Consumer<CartProvider>(
+                builder: (context, cart, _) {
+                  final qty = cart.quantityFor(item.id);
+                  if (qty > 0) {
+                    return _buildStepper(context, cart, qty);
+                  }
+                  return OutlinedButton(
+                    onPressed: () => _showCustomizationSheet(context),
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: const Text('ADD'),
+                  );
+                },
               ),
             ),
           ),
@@ -122,6 +134,72 @@ class MenuItemCard extends StatelessWidget {
               style: TextStyle(fontSize: 11, color: AppColors.primary),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStepper(BuildContext context, CartProvider cart, int qty) {
+    // Customizable items: show count badge → tap opens sheet to add another variant
+    if (item.customizationGroups.isNotEmpty) {
+      return GestureDetector(
+        onTap: () => showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (_) => CartItemSheet(item: item),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.primary,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.shopping_bag_outlined,
+                size: 14,
+                color: Colors.white,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '$qty added',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Non-customizable: inline stepper
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          StepperButton(
+            icon: Icons.remove,
+            onTap: () => cart.decrementByItemId(item.id),
+          ),
+          Text(
+            '$qty',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: 13,
+            ),
+          ),
+          StepperButton(icon: Icons.add, onTap: () => cart.addItem(item)),
         ],
       ),
     );

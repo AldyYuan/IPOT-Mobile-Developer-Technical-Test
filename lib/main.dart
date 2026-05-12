@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ipot/app_routes.dart';
+import 'package:ipot/features/cart/cart_provider.dart';
 import 'package:ipot/features/menu/menu_provider.dart';
 import 'package:ipot/features/menu/menu_repository.dart';
 import 'package:ipot/features/scanner/scanner_provider.dart';
@@ -25,6 +26,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => ScannerProvider()),
         ChangeNotifierProvider(create: (_) => MenuProvider(MenuRepository())),
+        ChangeNotifierProvider(create: (_) => CartProvider()),
       ],
       child: MaterialApp(
         title: 'IPOT',
@@ -33,6 +35,7 @@ class MyApp extends StatelessWidget {
           inputDecorationTheme: TextFieldTheme.theme,
           elevatedButtonTheme: AppButtonTheme.elevated,
           outlinedButtonTheme: AppButtonTheme.outlined,
+          scaffoldBackgroundColor: Colors.white,
         ),
         routes: AppRoutes.routes,
         home: const ScannerScreen(),

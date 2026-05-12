@@ -1,11 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:ipot/core/models/menu_item.dart';
+import 'package:ipot/features/cart/cart_provider.dart';
 import 'package:ipot/shared/theme/app_colors.dart';
+import 'package:ipot/shared/widgets/stepper_button.dart';
+import 'package:provider/provider.dart';
 
 class CustomizationBottomSheet extends StatefulWidget {
   final MenuItem item;
+  final int? editingCartIndex;
+  final Map<int, Set<int>> initialSelections;
+  final String? initialNote;
 
-  const CustomizationBottomSheet({super.key, required this.item});
+  const CustomizationBottomSheet({
+    super.key,
+    required this.item,
+    this.editingCartIndex,
+    this.initialSelections = const {},
+    this.initialNote,
+  });
 
   @override
   State<CustomizationBottomSheet> createState() =>
@@ -13,9 +25,19 @@ class CustomizationBottomSheet extends StatefulWidget {
 }
 
 class CustomizationBottomSheetState extends State<CustomizationBottomSheet> {
-  final Map<int, Set<int>> _selectedOptionIds = {}; // groupId → optionIds
-  final _noteController = TextEditingController();
+  final Map<int, Set<int>> _selectedOptionIds = {};
+  late final TextEditingController _noteController;
   int _quantity = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-fill if editing
+    for (final entry in widget.initialSelections.entries) {
+      _selectedOptionIds[entry.key] = Set.from(entry.value);
+    }
+    _noteController = TextEditingController(text: widget.initialNote ?? '');
+  }
 
   @override
   void dispose() {
@@ -69,20 +91,36 @@ class CustomizationBottomSheetState extends State<CustomizationBottomSheet> {
           ),
         )
         .toList();
+    final note = _noteController.text.trim().isEmpty
+        ? null
+        : _noteController.text.trim();
+    final cartProvider = context.read<CartProvider>();
 
-    // context.read<CartProvider>().addItem(
-    //   widget.item,
-    //   selectedOptions: allOptions,
-    //   note: _noteController.text.trim().isEmpty
-    //       ? null
-    //       : _noteController.text.trim(),
-    // );
+    if (widget.editingCartIndex != null) {
+      cartProvider.replaceItem(
+        widget.editingCartIndex!,
+        quantity: _quantity,
+        selectedOptions: allOptions,
+        note: note,
+      );
+    } else {
+      cartProvider.addItem(
+        widget.item,
+        quantity: _quantity,
+        selectedOptions: allOptions,
+        note: note,
+      );
+    }
 
     Navigator.pop(context);
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${widget.item.name} added to cart'),
+        content: Text(
+          widget.editingCartIndex != null
+              ? '${widget.item.name} updated'
+              : '${widget.item.name} (x$_quantity) added to cart',
+        ),
         duration: const Duration(seconds: 1),
         backgroundColor: AppColors.primary,
         behavior: SnackBarBehavior.floating,
@@ -298,7 +336,7 @@ class CustomizationBottomSheetState extends State<CustomizationBottomSheet> {
                       ),
                       Row(
                         children: [
-                          _StepperButton(
+                          StepperButton(
                             icon: Icons.remove,
                             onTap: _quantity > 1
                                 ? () => setState(() => _quantity--)
@@ -313,7 +351,7 @@ class CustomizationBottomSheetState extends State<CustomizationBottomSheet> {
                             ),
                           ),
                           const SizedBox(width: 20),
-                          _StepperButton(
+                          StepperButton(
                             icon: Icons.add,
                             onTap: () => setState(() => _quantity++),
                           ),
@@ -336,30 +374,6 @@ class CustomizationBottomSheetState extends State<CustomizationBottomSheet> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _StepperButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback? onTap;
-
-  const _StepperButton({required this.icon, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final enabled = onTap != null;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          color: enabled ? AppColors.primary : Colors.black12,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Icon(icon, size: 18, color: Colors.white),
       ),
     );
   }

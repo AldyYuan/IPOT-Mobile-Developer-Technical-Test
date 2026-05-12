@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ipot/app_routes.dart';
 import 'package:ipot/core/models/menu_category.dart';
+import 'package:ipot/features/cart/cart_provider.dart';
 import 'package:ipot/features/menu/menu_provider.dart';
 import 'package:ipot/features/menu/widgets/menu_item_card.dart';
 import 'package:provider/provider.dart';
@@ -20,7 +21,6 @@ class MenuScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text('Menu - Table ${tableId ?? "Unknown"}'),
         scrolledUnderElevation: 0,
@@ -30,6 +30,7 @@ class MenuScreen extends StatelessWidget {
               Navigator.pushReplacementNamed(context, AppRoutes.scanner),
         ),
       ),
+      bottomNavigationBar: _buildCartBar(context),
       body: Consumer<MenuProvider>(
         builder: (context, provider, child) {
           if (provider.state == MenuState.initial ||
@@ -167,6 +168,39 @@ class MenuScreen extends StatelessWidget {
       separatorBuilder: (_, _) =>
           const Divider(height: 1, color: Color(0xFFE0E0E0)),
       itemBuilder: (context, index) => MenuItemCard(item: items[index]),
+    );
+  }
+
+  Widget _buildCartBar(BuildContext context) {
+    final cart = context.watch<CartProvider>();
+
+    if (cart.isEmpty) return const SizedBox.shrink();
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+        child: ElevatedButton(
+          onPressed: () => Navigator.of(context).pushNamed(AppRoutes.cart),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '${cart.totalItemCount} ${cart.totalItemCount > 1 ? "items" : "item"}',
+              ),
+              Row(
+                children: [
+                  Text(
+                    '\$${cart.subtotal.toStringAsFixed(2)}',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.shopping_cart_rounded, size: 20),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
