@@ -11,6 +11,14 @@ class CartProvider extends ChangeNotifier {
   int get totalItemCount => _items.fold(0, (sum, item) => sum + item.quantity);
   double get subtotal => _items.fold(0.0, (sum, item) => sum + item.subtotal);
 
+  String? _tableId;
+  String? get tableId => _tableId;
+
+  void setTableId(String id) {
+    _tableId = id;
+    notifyListeners();
+  }
+
   String? _customerNote;
   String? get customerNote => _customerNote;
 
@@ -92,12 +100,10 @@ class CartProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Total quantity across all cart entries for a given menu item id
   int quantityFor(int menuItemId) => _items
       .where((i) => i.menuItem.id == menuItemId)
       .fold(0, (sum, i) => sum + i.quantity);
 
-  /// Decrement the last cart entry for a given menu item id
   void decrementByItemId(int menuItemId) {
     final index = _items.lastIndexWhere((i) => i.menuItem.id == menuItemId);
     if (index != -1) decrementItem(index);
@@ -119,6 +125,7 @@ class CartProvider extends ChangeNotifier {
   void clear() {
     _items.clear();
     _customerNote = null;
+    _tableId = null;
     notifyListeners();
   }
 }

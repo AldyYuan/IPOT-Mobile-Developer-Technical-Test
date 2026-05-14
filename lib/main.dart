@@ -4,6 +4,8 @@ import 'package:ipot/app_routes.dart';
 import 'package:ipot/features/cart/cart_provider.dart';
 import 'package:ipot/features/menu/menu_provider.dart';
 import 'package:ipot/features/menu/menu_repository.dart';
+import 'package:ipot/features/order/order_provider.dart';
+import 'package:ipot/features/order/order_repository.dart';
 import 'package:ipot/features/scanner/scanner_provider.dart';
 import 'package:ipot/features/scanner/scanner_screen.dart';
 import 'package:ipot/shared/theme/button_theme.dart';
@@ -27,6 +29,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ScannerProvider()),
         ChangeNotifierProvider(create: (_) => MenuProvider(MenuRepository())),
         ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(create: (_) => OrderProvider(OrderRepository())),
       ],
       child: MaterialApp(
         title: 'IPOT',

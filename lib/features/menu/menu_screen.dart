@@ -30,7 +30,7 @@ class MenuScreen extends StatelessWidget {
               Navigator.pushReplacementNamed(context, AppRoutes.scanner),
         ),
       ),
-      bottomNavigationBar: _buildCartBar(context),
+      bottomNavigationBar: _buildCartBar(context, tableId ?? ''),
       body: Consumer<MenuProvider>(
         builder: (context, provider, child) {
           if (provider.state == MenuState.initial ||
@@ -90,7 +90,7 @@ class MenuScreen extends StatelessWidget {
 
   Padding buildSearchBar(MenuProvider provider) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      padding: const EdgeInsets.fromLTRB(12, 8, 16, 4),
       child: TextField(
         onChanged: provider.updateSearchQuery,
         decoration: InputDecoration(
@@ -118,7 +118,7 @@ class MenuScreen extends StatelessWidget {
       height: 52,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         itemCount: categories.length,
         separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
@@ -171,7 +171,7 @@ class MenuScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCartBar(BuildContext context) {
+  Widget _buildCartBar(BuildContext context, String tableId) {
     final cart = context.watch<CartProvider>();
 
     if (cart.isEmpty) return const SizedBox.shrink();

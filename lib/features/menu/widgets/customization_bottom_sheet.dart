@@ -296,6 +296,7 @@ class CustomizationBottomSheetState extends State<CustomizationBottomSheet> {
                       ],
                     ),
                   ),
+
                   // Note field
                   const Text(
                     'Special Request',

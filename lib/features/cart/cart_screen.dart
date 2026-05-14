@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:ipot/app_routes.dart';
 import 'package:ipot/features/cart/widgets/cart_item_card.dart';
+import 'package:ipot/features/order/order_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:ipot/features/cart/cart_provider.dart';
 import 'package:ipot/shared/theme/app_colors.dart';
@@ -10,6 +12,7 @@ class CartScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cart = context.watch<CartProvider>();
+    final tableId = cart.tableId;
 
     return Scaffold(
       appBar: AppBar(
@@ -28,7 +31,7 @@ class CartScreen extends StatelessWidget {
       ),
       body: cart.isEmpty
           ? _buildEmptyState(context)
-          : _buildCartContent(context, cart),
+          : _buildCartContent(context, cart, tableId ?? ''),
     );
   }
 
@@ -66,7 +69,11 @@ class CartScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCartContent(BuildContext context, CartProvider cart) {
+  Widget _buildCartContent(
+    BuildContext context,
+    CartProvider cart,
+    String tableId,
+  ) {
     return Column(
       children: [
         Expanded(
@@ -79,12 +86,16 @@ class CartScreen extends StatelessWidget {
                 CartItemCard(item: cart.items[index], index: index),
           ),
         ),
-        _buildOrderSummary(context, cart),
+        _buildOrderSummary(context, cart, tableId),
       ],
     );
   }
 
-  Widget _buildOrderSummary(BuildContext context, CartProvider cart) {
+  Widget _buildOrderSummary(
+    BuildContext context,
+    CartProvider cart,
+    String tableId,
+  ) {
     return Container(
       padding: EdgeInsets.fromLTRB(
         20,
@@ -142,7 +153,39 @@ class CartScreen extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () async {
+                final order = context.read<OrderProvider>();
+
+                await order.submitOrder(
+                  tableId: tableId,
+                  cartItems: cart.items,
+                );
+
+                if (!context.mounted) return;
+
+                if (order.state == OrderState.success ||
+                    order.state == OrderState.tracking) {
+                  cart.clear();
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    AppRoutes.orderTracking,
+                    (route) => route.settings.name == AppRoutes.menu,
+                  );
+                } else if (order.state == OrderState.error) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        order.errorMessage ?? 'Failed to place order',
+                      ),
+                      backgroundColor: Colors.redAccent,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  );
+                }
+              },
               child: const Text('Place Order'),
             ),
           ),

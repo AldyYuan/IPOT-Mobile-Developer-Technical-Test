@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:ipot/app_routes.dart';
+import 'package:ipot/features/cart/cart_provider.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:provider/provider.dart';
 
 class ScannerProvider extends ChangeNotifier {
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
@@ -47,11 +49,9 @@ class ScannerProvider extends ChangeNotifier {
 
       if (tableId.isNotEmpty) {
         controller.stop();
-        Navigator.pushNamed(
-          scaffoldKey.currentContext!,
-          AppRoutes.menu,
-          arguments: tableId,
-        );
+        final context = scaffoldKey.currentContext!;
+        context.read<CartProvider>().setTableId(tableId);
+        Navigator.pushNamed(context, AppRoutes.menu, arguments: tableId);
       }
     } catch (e) {
       _errorMessage = 'Error processing QR code: $e';
