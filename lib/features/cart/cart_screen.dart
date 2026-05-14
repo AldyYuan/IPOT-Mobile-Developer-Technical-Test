@@ -153,39 +153,7 @@ class CartScreen extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () async {
-                final order = context.read<OrderProvider>();
-
-                await order.submitOrder(
-                  tableId: tableId,
-                  cartItems: cart.items,
-                );
-
-                if (!context.mounted) return;
-
-                if (order.state == OrderState.success ||
-                    order.state == OrderState.tracking) {
-                  cart.clear();
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    AppRoutes.orderTracking,
-                    (route) => route.settings.name == AppRoutes.menu,
-                  );
-                } else if (order.state == OrderState.error) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        order.errorMessage ?? 'Failed to place order',
-                      ),
-                      backgroundColor: Colors.redAccent,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  );
-                }
-              },
+              onPressed: () => _confirmPlaceOrder(context, cart, tableId),
               child: const Text('Place Order'),
             ),
           ),
@@ -219,5 +187,87 @@ class CartScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _confirmPlaceOrder(
+    BuildContext context,
+    CartProvider cart,
+    String tableId,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        contentPadding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+        title: Row(
+          children: const [
+            Icon(Icons.receipt_long_rounded, color: AppColors.primary, size: 24),
+            SizedBox(width: 10),
+            Text(
+              'Confirm Order',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${cart.totalItemCount} ${cart.totalItemCount == 1 ? 'item' : 'items'} · \$${cart.subtotal.toStringAsFixed(2)}',
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'Once placed, your order will be sent to the kitchen and cannot be changed.',
+              style: TextStyle(color: Colors.black45, fontSize: 13),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text(
+              'Go Back',
+              style: TextStyle(color: Colors.black45),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Place Order'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+    if (!context.mounted) return;
+
+    final order = context.read<OrderProvider>();
+    await order.submitOrder(tableId: tableId, cartItems: cart.items);
+
+    if (!context.mounted) return;
+
+    if (order.state == OrderState.success || order.state == OrderState.tracking) {
+      cart.clear();
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.orderTracking,
+        (route) => route.settings.name == AppRoutes.menu,
+      );
+    } else if (order.state == OrderState.error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(order.errorMessage ?? 'Failed to place order'),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+    }
   }
 }
