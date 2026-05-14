@@ -4,6 +4,8 @@ A Flutter mobile app that lets restaurant guests scan a QR code on their table, 
 
 > **No live API** was provided in the spec. All network calls are handled by mock repositories that simulate realistic latency and responses. To connect a real backend, set `API_BASE_URL` in `.env` (see [Configuration](#configuration)).
 
+**[Download latest APK](https://github.com/AldyYuan/IPOT-Mobile-Developer-Technical-Test/releases/latest)**
+
 ---
 
 ## Table of Contents
